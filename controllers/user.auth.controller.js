@@ -25,7 +25,7 @@ exports.signUp = async (req, res) => {
     const token = auth.createToken(savedUser?._id, savedUser?.email);
     // const abilities = await Ability.where({ userId: savedUser._id })
     const userResponse = {...savedUser._doc, token, password: undefined}
-    res.status(201).json({ message: 'User created', data: userResponse });
+    res.status(200).json({ message: 'User created', data: userResponse });
   } catch (error) {
     console.log(error.message)
     res.status(500).json({
