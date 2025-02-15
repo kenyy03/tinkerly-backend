@@ -2,15 +2,15 @@ const Helper = require('../helpers/index');
 const User = require('../models/user.model');
 const Ability = require('../models/ability.model');
 const Address = require('../models/address.model');
+const UserOcupation = require('../models/userOcupation.model');
 const bcrypt = require('bcryptjs');
 const auth = require('../middlewares/verify.jwt.middleware');
 const cloudinary = require('../config/cloudinary.config');
 
 exports.signUp = async (req, res) => {
   try {
-    const { names, lastNames, email, phone, password, role, ocupationId } =
-      req.body;
-
+    const { names, lastNames, email, phone, password, roleId } = req.body;
+    console.log(roleId)
     const encryptedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       names,
@@ -18,12 +18,11 @@ exports.signUp = async (req, res) => {
       email,
       phone,
       password: encryptedPassword,
-      role,
+      roleId: roleId._id,
     });
 
-    const savedUser = await user.save();
+    const savedUser = await (await user.save()).populate('roleId');
     const token = auth.createToken(savedUser?._id, savedUser?.email);
-    // const abilities = await Ability.where({ userId: savedUser._id })
     const userResponse = {...savedUser._doc, token, password: undefined}
     res.status(200).json({ message: 'User created', data: userResponse });
   } catch (error) {
@@ -38,8 +37,7 @@ exports.logIn = async (req, res) => {
   const { email, password } = req.body;
   try {
     const username = await User.findOne({ email })
-      .populate('role');
-
+      .populate('roleId');
     const credentialsValid =
       username && (await bcrypt.compare(password, username?.password));
     if (!credentialsValid) {
@@ -47,9 +45,7 @@ exports.logIn = async (req, res) => {
       return;
     }
     const token = auth.createToken(username?._id, username?.email);
-    const abilities = await Ability.find().where('userId').equals(username._id)
-    const address = await Address.find().where('userId').equals(username._id).populate('city')
-    const userResponse = {...username._doc, token, abilities, address, password: undefined}
+    const userResponse = {...username._doc, token, password: undefined}
     res.status(200).json({ message: 'User logged', data: userResponse });
   } catch (error) {
     res.status(500).json({
@@ -62,16 +58,14 @@ exports.getUserById = async (req, res) => {
   const { _id } = req.query;
   try{
     const user = await User.findById({_id})
-      .populate('role');
+      .populate('roleId');
     
     if(!user){
       res.status(404).json({ message: 'User not found' });
       return;
     }
     const token = auth.createToken(user?._id, user?.email);
-    const abilities = await Ability.find().where('userId').equals(user._id)
-    const address = await Address.find().where('userId').equals(user._id).populate('city')
-    const userResponse = {...user._doc, token, abilities, address, password: undefined}
+    const userResponse = {...user._doc, token, password: undefined}
     res.status(200).json({ message: 'User found', data: userResponse });
     return;
   }
@@ -97,7 +91,7 @@ exports.updateUser = async (req, res) => {
       ...( !Helper.isNullOrWhiteSpace(description) && { description } ),
     }
     const response = await User.findByIdAndUpdate(_id, userToUpdate, {new: true})
-      .populate('role')
+      .populate('roleId')
       .populate('address');
 
     if(!response){
@@ -139,16 +133,14 @@ exports.changeImageProfile = async (req, res) => {
       url: responseCloudinary.secure_url
     }
     const userUpdated = await User.findByIdAndUpdate(_id, {imageProfile}, {new: true})
-      .populate('role');
+      .populate('roleId');
     
     if(!userUpdated){
       res.status(404).json({ message: 'User not found' });
       return;
     }
     const token = auth.createToken(userUpdated?._id, userUpdated?.email);
-    const abilities = await Ability.find().where('userId').equals(userUpdated._id)
-    const address = await Address.find().where('userId').equals(userUpdated._id).populate('city')
-    const userResponse = {...userUpdated._doc, token, abilities, address, password: undefined} 
+    const userResponse = {...userUpdated._doc, token, password: undefined} 
     
     res.status(200).json({ message: 'User image profile updated', data: userResponse });
   }catch(error){
@@ -166,8 +158,7 @@ exports.publicProfile = async (req, res) => {
       return;
     }
     const userUpdated = await User.findByIdAndUpdate(_id, {isPublicProfile}, {new: true})
-      .populate('role')
-      .populate('habilities');
+      .populate('roleId');
     
     if(!userUpdated){
       res.status(404).json({ message: 'User not found' });
@@ -188,8 +179,7 @@ exports.publicProfile = async (req, res) => {
 exports.getUsersByIsPublicProfile = async (req, res) => {
   try{
     const users = await User.find({isPublicProfile: true})
-      .populate('role')
-      .populate('address');
+      .populate('roleId');
 
     if(!users){
       res.status(404).json({ message: 'Users not found' });
@@ -213,7 +203,7 @@ exports.getPublicUsersForResume = async (req, res) => {
     const users = await User.find({ isPublicProfile: true })
       .sort({ 'createdAt': -1 })
       .limit(3)
-      .populate('role')
+      .populate('roleId')
 
     if(!users){
       res.status(404).json({ message: 'Users Not Found' });
@@ -222,9 +212,7 @@ exports.getPublicUsersForResume = async (req, res) => {
 
     const usersResponse = await Promise.all( users.map(async (user) => {
       // const token = auth.createToken(user?._id, user?.email);
-      const abilities = await Ability.find().where('userId').equals(user._id)
-      const address = await Address.find().where('userId').equals(user._id).populate('city')
-      const userResponse = {...user._doc, abilities, address, password: undefined}
+      const userResponse = {...user._doc, password: undefined}
       return userResponse;
     }));
 

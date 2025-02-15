@@ -29,7 +29,7 @@ exports.getCities = async (req, res) => {
     try {
 
       const cities = await City.find();
-      res.status(201).json({ message: 'Success getting cities', data: cities });
+      res.status(200).json({ message: 'Success getting cities', data: cities });
     } catch (error) {
       console.log(error.message)
       res.status(500).json({
