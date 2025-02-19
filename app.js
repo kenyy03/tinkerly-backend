@@ -22,12 +22,14 @@ const authRoutes = require('./routes/user.auth.routes');
 const roleRoutes = require('./routes/role.routes')
 const cityRoutes = require('./routes/city.routes')
 const ocupationsRoutes = require('./routes/ocupation.routes')
+const addressRoutes = require('./routes/adress.routes')
 
 app.use(urlPrefix, [
   authRoutes,
   roleRoutes,
   cityRoutes,
   ocupationsRoutes,
+  addressRoutes
 ]);
 
 module.exports = app;
