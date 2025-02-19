@@ -12,7 +12,7 @@ app.get('/user-by-id', [verifyJwt.veryfyToken], authController.getUserById);
 
 app.put('/update-user', [verifyJwt.veryfyToken], authController.updateUser);
 
-app.put('/change-image-profile', [verifyJwt.veryfyToken], authController.changeImageProfile);
+app.put('/change-image-profile', authController.changeImageProfile);
 
 app.put('/public-profile', [verifyJwt.veryfyToken], authController.publicProfile);
 
