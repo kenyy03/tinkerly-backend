@@ -10,7 +10,6 @@ const cloudinary = require('../config/cloudinary.config');
 exports.signUp = async (req, res) => {
   try {
     const { names, lastNames, email, phone, password, roleId } = req.body;
-    console.log(roleId)
     const encryptedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       names,
