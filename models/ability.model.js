@@ -3,8 +3,7 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const abilitiesSchema = new mongoose.Schema(
   {
-    description: { type: String, required: true, unique: true },
-    userId: { type: ObjectId, ref: 'user', default: null },
+    description: { type: String, required: true },
   },
 );
 

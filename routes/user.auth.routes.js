@@ -10,7 +10,7 @@ app.post('/login', authController.logIn);
 
 app.get('/user-by-id', [verifyJwt.veryfyToken], authController.getUserById);
 
-app.put('/update-user', [verifyJwt.veryfyToken], authController.updateUser);
+app.put('/update-user', authController.updateUser);
 
 app.put('/change-image-profile', authController.changeImageProfile);
 
