@@ -6,4 +6,8 @@ app.post('/create-ocupation',  ocupationController.createOcupation);
 
 app.get('/get-all-ocupations', ocupationController.getOcupations);
 
+app.post('/ocupation/assign-ocupation-to-user', ocupationController.assignOcupationToUser);
+
+app.get('/ocupation/get-ocupation-by-user', ocupationController.getOcupationByUserId);
+
 module.exports = app;
