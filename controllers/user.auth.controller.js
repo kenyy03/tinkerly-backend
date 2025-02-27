@@ -76,22 +76,16 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const { names, lastNames, payPerHour, payPerService, city, ocupation, phone, _id, habilities, description } = req.body;
+  const { names, lastNames, phone, _id, description } = req.body;
   try{
     let userToUpdate = {
       ...( !Helper.isNullOrWhiteSpace(names) && { names } ),
       ...( !Helper.isNullOrWhiteSpace(lastNames) && { lastNames } ),
-      // ...( !Helper.isNullOrWhiteSpace(payPerHour) && { payPerHour } ),
-      // ...( !Helper.isNullOrWhiteSpace(payPerService) && { payPerService } ),
-      // ...( !Helper.isNullOrWhiteSpace(city) && { city } ),
-      // ...( !Helper.isNullOrWhiteSpace(ocupation) && { ocupation } ),
       ...( !Helper.isNullOrWhiteSpace(phone) && { phone } ),
-      // ...( Helper.isFullArray(habilities) && { habilities } ),
       ...( !Helper.isNullOrWhiteSpace(description) && { description } ),
     }
     const response = await User.findByIdAndUpdate(_id, userToUpdate, {new: true})
       .populate('roleId')
-      .populate('address');
 
     if(!response){
       res.status(404).json({ message: 'User not found' });
