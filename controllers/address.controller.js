@@ -9,7 +9,7 @@ exports.saveAddress = async (req, res) => {
     if(Helper.isNullOrUndefined(addressFound)){
       // create address
       const address = new Address({ cityId, neighborhood, directions, userId })
-      const addressCreated = await address.save();
+      const addressCreated = await (await address.save()).populate('cityId');
       const addressResponse = {...addressCreated._doc};
       res.status(200).json({ message: 'Address created', data: addressResponse });
       return;
