@@ -1,5 +1,6 @@
 const Helper = require('../helpers/index');
 const User = require('../models/user.model');
+const Role = require('../models/role.model');
 const Ability = require('../models/ability.model');
 const Address = require('../models/address.model');
 const UserOcupation = require('../models/userOcupation.model');
@@ -77,12 +78,15 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const { names, lastNames, phone, _id, description } = req.body;
+  const { isDelete } = req.query;
+  const canDeleteImage = isDelete.toLowerCase() === 'true';
   try{
     let userToUpdate = {
       ...( !Helper.isNullOrWhiteSpace(names) && { names } ),
       ...( !Helper.isNullOrWhiteSpace(lastNames) && { lastNames } ),
       ...( !Helper.isNullOrWhiteSpace(phone) && { phone } ),
       ...( !Helper.isNullOrWhiteSpace(description) && { description } ),
+      ...( canDeleteImage && { imageProfile: { publicId: '', url: '' } }),
     }
     const response = await User.findByIdAndUpdate(_id, userToUpdate, {new: true})
       .populate('roleId')
@@ -193,9 +197,10 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
 
 exports.getPublicUsersForResume = async (req, res) => {
   try {
-    const users = await User.find({ isPublicProfile: true })
-      .sort({ 'createdAt': -1 })
-      .limit(3)
+    const roleEmployee = await Role.findOne({ description: { $regex: 'Profesional', $options: 'i' } });
+    const users = await User.find({ roleId: roleEmployee._id, isPublicProfile: true })
+      .sort({ _id: -1 })
+      .limit(4)
       .populate('roleId')
 
     if(!users){
@@ -204,8 +209,8 @@ exports.getPublicUsersForResume = async (req, res) => {
     }
 
     const usersResponse = await Promise.all( users.map(async (user) => {
-      // const token = auth.createToken(user?._id, user?.email);
-      const userResponse = {...user._doc, password: undefined}
+      const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId');
+      const userResponse = {...user._doc, password: undefined, userOcupation}
       return userResponse;
     }));
 

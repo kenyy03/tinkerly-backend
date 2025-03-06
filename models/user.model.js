@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
       publicId: { type: String, default: '' },
       url: { type: String, default: '' }
      },
+     isPublicProfile: { type: Boolean, default: false },
   },
 );
 

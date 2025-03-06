@@ -8,13 +8,13 @@ app.post('/signup', [verifySignUp.verifyDuplicateEmail], authController.signUp);
 
 app.post('/login', authController.logIn);
 
-app.get('/user-by-id', [verifyJwt.veryfyToken], authController.getUserById);
-
 app.put('/update-user', authController.updateUser);
 
 app.put('/change-image-profile', authController.changeImageProfile);
 
-app.put('/public-profile', [verifyJwt.veryfyToken], authController.publicProfile);
+app.put('/public-profile', authController.publicProfile);
+
+app.get('/user-by-id', authController.getUserById);
 
 app.get('/get-users-by-is-public-profile', authController.getUsersByIsPublicProfile);
 
