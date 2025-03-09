@@ -5,7 +5,7 @@ const reviewSchema = new mongoose.Schema(
   {
     reviewerId: { type: ObjectId, ref: 'user', default: null },
     reviewedId: { type: ObjectId, ref: 'user', default: null },
-    rating: { type: Number, default: 0 },
+    rating: { type: Number, default: 0.0 },
     comment: { type: String, default: ''},
   },
   {
