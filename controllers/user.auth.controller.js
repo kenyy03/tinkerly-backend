@@ -1,8 +1,9 @@
 const Helper = require('../helpers/index');
 const User = require('../models/user.model');
 const Role = require('../models/role.model');
-const Ability = require('../models/ability.model');
 const Address = require('../models/address.model');
+const UserAbilities = require('../models/userAbility.model');
+const Review = require('../models/review.model');
 const UserOcupation = require('../models/userOcupation.model');
 const bcrypt = require('bcryptjs');
 const auth = require('../middlewares/verify.jwt.middleware');
@@ -182,11 +183,27 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
       res.status(404).json({ message: 'Users not found' });
       return;
     }
-    const usersResponse = users.map(user => {
-      const token = auth.createToken(user?._id, user?.email);
-      const userResponse = {...user._doc, token, password: undefined} 
-      return userResponse;
-    })
+    const usersResponse = await Promise.all(
+      users.map(async(user) => {
+        const address = await Address.findOne({ userId: user._id }).populate('cityId');
+        const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId');
+        const userAbilities = await UserAbilities.find({ userId: user._id }).populate('abilityId');
+        const reviews = await Review.find({ reviewedId: user._id }).populate('reviewerId');
+        const averageRating = (reviews.map(e => e.rating).reduce((total, acum) => total + acum, 0 )) / reviews.length;
+        const token = auth.createToken(user?._id, user?.email);
+        const userResponse = {
+          ...user._doc, 
+          address, 
+          userOcupation, 
+          userAbilities, 
+          reviews,
+          averageRating,
+          token, 
+          password: undefined
+        } 
+        return userResponse;
+      })
+    );
     res.status(200).json({ message: 'Users found', data: usersResponse });
   }catch(error){
     res.status(500).json({
