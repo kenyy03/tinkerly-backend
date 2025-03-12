@@ -5,7 +5,9 @@ const Helper = require('../helpers/index');
 exports.getAbilitiesByUserId = async (req, res) => {
   try {
     const { userId } = req.query;
-    const abilitiesByUser = await UserAbilities.find({userId: userId}).populate('abilityId');
+    const abilitiesByUser = await UserAbilities.find({userId: userId})
+      .populate('abilityId')
+      .lean();
     res.status(200).json({ message: 'Success getting abilities', data: abilitiesByUser });
   } catch (error) {
     console.log(error.message)
@@ -17,7 +19,7 @@ exports.getAbilitiesByUserId = async (req, res) => {
 
 exports.getAllAbilities = async (req, res) => {
   try {
-    const abilities = await Ability.find();
+    const abilities = await Ability.find().lean();
     res.status(200).json({ message: 'Success getting abilities', data: abilities });
   } catch (error) {
     console.log(error.message)
