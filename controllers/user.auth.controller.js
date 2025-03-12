@@ -38,7 +38,9 @@ exports.logIn = async (req, res) => {
   const { email, password } = req.body;
   try {
     const username = await User.findOne({ email })
-      .populate('roleId');
+      .populate('roleId')
+      .lean();
+
     const credentialsValid =
       username && (await bcrypt.compare(password, username?.password));
     if (!credentialsValid) {
@@ -46,7 +48,7 @@ exports.logIn = async (req, res) => {
       return;
     }
     const token = auth.createToken(username?._id, username?.email);
-    const userResponse = {...username._doc, token, password: undefined}
+    const userResponse = {...username, token, password: undefined}
     res.status(200).json({ message: 'User logged', data: userResponse });
   } catch (error) {
     res.status(500).json({
@@ -59,14 +61,15 @@ exports.getUserById = async (req, res) => {
   const { _id } = req.query;
   try{
     const user = await User.findById({_id})
-      .populate('roleId');
+      .populate('roleId')
+      .lean();
     
     if(!user){
       res.status(404).json({ message: 'User not found' });
       return;
     }
     const token = auth.createToken(user?._id, user?.email);
-    const userResponse = {...user._doc, token, password: undefined}
+    const userResponse = {...user, token, password: undefined}
     res.status(200).json({ message: 'User found', data: userResponse });
     return;
   }
@@ -177,7 +180,8 @@ exports.publicProfile = async (req, res) => {
 exports.getUsersByIsPublicProfile = async (req, res) => {
   try{
     const users = await User.find({isPublicProfile: true})
-      .populate('roleId');
+      .populate('roleId')
+      .lean();
 
     if(!users){
       res.status(404).json({ message: 'Users not found' });
@@ -185,16 +189,20 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
     }
     const usersResponse = await Promise.all(
       users.map(async(user) => {
-        const address = await Address.findOne({ userId: user._id }).populate('cityId');
-        const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId');
-        const userAbilities = await UserAbilities.find({ userId: user._id }).populate('abilityId');
-        const reviews = await Review.find({ reviewedId: user._id }).populate('reviewerId');
-        const averageRating = (reviews.map(e => e.rating).reduce((total, acum) => total + acum, 0 )) / reviews.length;
+        const address = await Address.findOne({ userId: user._id }).populate('cityId').lean();
+        const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId').lean();
+        const userAbilities = await UserAbilities.find({ userId: user._id }).populate('abilityId').lean();
+        const reviews = await Review.find({ reviewedId: user._id }).populate('reviewerId').lean();
+        const averageRating = ((reviews.map(e => e.rating).reduce((total, acum) => total + acum, 0 )) / reviews.length) ?? 0;
         const token = auth.createToken(user?._id, user?.email);
         const userResponse = {
-          ...user._doc, 
+          ...user, 
           address, 
-          userOcupation, 
+          userOcupation: {
+            ...userOcupation,       
+            hourlyRate: (userOcupation.hourlyRate.toString()),
+            serviceFee: (userOcupation.serviceFee.toString())
+          }, 
           userAbilities, 
           reviews,
           averageRating,
@@ -214,11 +222,12 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
 
 exports.getPublicUsersForResume = async (req, res) => {
   try {
-    const roleEmployee = await Role.findOne({ description: { $regex: 'Profesional', $options: 'i' } });
+    const roleEmployee = await Role.findOne({ description: { $regex: 'Profesional', $options: 'i' } }).lean();
     const users = await User.find({ roleId: roleEmployee._id, isPublicProfile: true })
       .sort({ _id: -1 })
       .limit(4)
       .populate('roleId')
+      .lean()
 
     if(!users){
       res.status(404).json({ message: 'Users Not Found' });
@@ -226,8 +235,20 @@ exports.getPublicUsersForResume = async (req, res) => {
     }
 
     const usersResponse = await Promise.all( users.map(async (user) => {
-      const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId');
-      const userResponse = {...user._doc, password: undefined, userOcupation}
+      const userOcupation  = await UserOcupation.findOne({ userId: user._id })
+        .populate('ocupationId')
+        .lean();
+      
+      const userOcupationCopy = {...userOcupation};
+      const userResponse = {
+        ...user, 
+        password: undefined, 
+        userOcupation: {
+          ...userOcupationCopy,      
+          hourlyRate: (userOcupationCopy.hourlyRate.toString()),
+          serviceFee: (userOcupationCopy.serviceFee.toString())
+        }
+      }
       return userResponse;
     }));
 
