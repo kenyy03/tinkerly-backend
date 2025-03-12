@@ -17,14 +17,13 @@ exports.createRole = async (req, res) => {
 };
 
 exports.getRoles = async (req, res) => {
-    try {
-
-      const roles = await Role.find();
-      res.status(200).json({ message: 'Success getting roles', data: roles });
-    } catch (error) {
-      console.log(error.message)
-      res.status(500).json({
-        message: error.message || 'Something goes wrong creating the user',
-      });
-    }
-  };
+  try {
+    const roles = await Role.find().lean();
+    res.status(200).json({ message: 'Success getting roles', data: roles });
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({
+      message: error.message || 'Something goes wrong creating the user',
+    });
+  }
+};
