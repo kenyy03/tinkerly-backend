@@ -28,7 +28,7 @@ exports.createCity = async (req, res) => {
 exports.getCities = async (req, res) => {
     try {
 
-      const cities = await City.find();
+      const cities = await City.find().lean();
       res.status(200).json({ message: 'Success getting cities', data: cities });
     } catch (error) {
       console.log(error.message)
