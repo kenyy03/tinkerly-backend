@@ -41,7 +41,9 @@ exports.saveAddress = async (req, res) => {
 exports.getAddressByUserId = async (req, res) => {
   try {
     const { userId } = req.query;
-    const address = await Address.findOne({userId: userId}).populate('cityId');
+    const address = await Address.findOne({userId: userId})
+      .populate('cityId')
+      .lean();
     res.status(200).json({ message: 'Success getting address', data: address });
   } catch (error) {
     console.log(error.message)
