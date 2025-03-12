@@ -52,7 +52,9 @@ exports.assignOcupationToUser = async (req, res) => {
 exports.getOcupationByUserId = async (req, res) => {
   try {
     const { userId } = req.query;
-    const response = await UserOcupation.findOne({ userId: userId }).populate('ocupationId');
+    const response = await UserOcupation.findOne({ userId: userId })
+      .populate('ocupationId')
+      .lean();
     if(Helper.isNullOrUndefined(response)){
       res.status(400).json({
         message: `Not found user with id: ${userId}`,
@@ -60,7 +62,11 @@ exports.getOcupationByUserId = async (req, res) => {
       return;
     }
 
-    const ocupationResponse = {...response._doc};
+    const ocupationResponse = {
+      ...response, 
+      hourlyRate: (response.hourlyRate.toString()),
+      serviceFee: (response.serviceFee.toString())
+    };
     res.status(200).json({ message: 'Getting ocupation by user id', data: ocupationResponse });
   } catch (e) {
     console.error(e)
@@ -69,14 +75,13 @@ exports.getOcupationByUserId = async (req, res) => {
 }
 
 exports.getOcupations = async (req, res) => {
-    try {
-
-      const ocupations = await Ocupation.find();
-      res.status(200).json({ message: 'Success getting ocupations', data: ocupations });
-    } catch (error) {
-      console.log(error.message)
-      res.status(500).json({
-        message: error.message || 'Something goes wrong gettings the ocupations',
-      });
-    }
-  };
+  try {
+    const ocupations = await Ocupation.find().lean();
+    res.status(200).json({ message: 'Success getting ocupations', data: ocupations });
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({
+      message: error.message || 'Something goes wrong gettings the ocupations',
+    });
+  }
+};
