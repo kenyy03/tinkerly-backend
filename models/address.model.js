@@ -4,9 +4,10 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 const addressSchema = new mongoose.Schema(
   {
     cityId: { type: ObjectId, ref: 'city', default: null },
-    userId: { type: ObjectId, ref: 'user', default: null },
     neighborhood: { type: String, required: true },
-    directions: { type: String, default: ''}
+    directions: { type: String, default: ''},
+    userId: { type: ObjectId, ref: 'user', default: null },
+    jobId: { type: ObjectId, ref: 'job', default: null },
   },
 );
 
