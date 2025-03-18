@@ -9,6 +9,12 @@ const jobForUserSchema = new mongoose.Schema(
     isConfirmedByEmployee: { type: Boolean, default: false },
     isConfirmedByEmployer: { type: Boolean, default: false },
   },
+  {
+    timestamps: {
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
+  }
 );
 
 module.exports = mongoose.model('jobForUser', jobForUserSchema);
