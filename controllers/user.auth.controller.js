@@ -179,7 +179,8 @@ exports.publicProfile = async (req, res) => {
 
 exports.getUsersByIsPublicProfile = async (req, res) => {
   try{
-    const users = await User.find({isPublicProfile: true})
+    const roleEmployee = await Role.findOne({ description: { $regex: 'Profesional', $options: 'i' } }).lean();
+    const users = await User.find({isPublicProfile: true, roleId: roleEmployee._id})
       .populate('roleId')
       .lean();
 
@@ -192,9 +193,11 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
         const address = await Address.findOne({ userId: user._id }).populate('cityId').lean();
         const userOcupation  = await UserOcupation.findOne({ userId: user._id }).populate('ocupationId').lean();
         const userAbilities = await UserAbilities.find({ userId: user._id }).populate('abilityId').lean();
-        const reviews = await Review.find({ reviewedId: user._id }).populate('reviewerId').lean();
+        const reviews = await Review.find({ reviewedId: user._id })
+          .populate({ path: 'reviewerId', select: '-password', populate: { path: 'roleId' } })
+          .lean();
         const averageRating = ((reviews.map(e => e.rating).reduce((total, acum) => total + acum, 0 )) / reviews.length) ?? 0;
-        const token = auth.createToken(user?._id, user?.email);
+        // const token = auth.createToken(user?._id, user?.email);
         const userResponse = {
           ...user, 
           address, 
@@ -206,7 +209,7 @@ exports.getUsersByIsPublicProfile = async (req, res) => {
           userAbilities, 
           reviews,
           averageRating,
-          token, 
+          // token, 
           password: undefined
         } 
         return userResponse;
@@ -234,23 +237,35 @@ exports.getPublicUsersForResume = async (req, res) => {
       return;
     }
 
-    const usersResponse = await Promise.all( users.map(async (user) => {
-      const userOcupation  = await UserOcupation.findOne({ userId: user._id })
-        .populate('ocupationId')
-        .lean();
-      
-      const userOcupationCopy = {...userOcupation};
-      const userResponse = {
-        ...user, 
-        password: undefined, 
-        userOcupation: {
-          ...userOcupationCopy,      
-          hourlyRate: (userOcupationCopy.hourlyRate.toString()),
-          serviceFee: (userOcupationCopy.serviceFee.toString())
+    const usersResponse = await Promise.all( 
+      users.map(async (user) => {
+        const address = await Address.findOne({ userId: user._id }).populate('cityId').lean();
+        const userOcupation  = await UserOcupation.findOne({ userId: user._id })
+          .populate('ocupationId')
+          .lean();
+        const userAbilities = await UserAbilities.find({ userId: user._id }).populate('abilityId').lean();
+        const reviews = await Review.find({ reviewedId: user._id })
+          .populate({ path: 'reviewerId', select: '-password', populate: { path: 'roleId' } })
+          .lean();
+        const averageRating = ((reviews.map(e => e.rating).reduce((total, acum) => total + acum, 0 )) / reviews.length) ?? 0;
+        
+        const userOcupationCopy = {...userOcupation};
+        const userResponse = {
+          ...user, 
+          address,
+          userOcupation: {
+            ...userOcupationCopy,      
+            hourlyRate: (userOcupationCopy.hourlyRate.toString()),
+            serviceFee: (userOcupationCopy.serviceFee.toString())
+          },
+          userAbilities,
+          reviews,
+          averageRating,
+          password: undefined, 
         }
-      }
-      return userResponse;
-    }));
+        return userResponse;
+      })
+    );
 
     res.status(200).json({ message: 'Success getting users', data: usersResponse });
   } catch (error) {
