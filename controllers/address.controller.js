@@ -4,7 +4,9 @@ const Helper = require('../helpers/index');
 exports.saveAddress = async (req, res) => {
   try {
     const { userId, cityId, neighborhood, directions, jobId } = req.body;
-    const addressFound = Helper.isNullOrWhiteSpace(jobId) 
+    const { isJob } = req.query;
+    const isJobQuery = isJob.toLowerCase() === 'true';
+    const addressFound = !isJobQuery 
       ? await Address.findOne({userId: userId}).populate('cityId')
       : await Address.findOne({ jobId: jobId }).populate('cityId');
     
