@@ -6,6 +6,8 @@ const jobSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, required: true},
     employerId: { type: ObjectId, ref: 'user', default: null },
+    hourlyRate: { type: Number, default: 0.0},
+    serviceFee: { type: Number, default: 0.0},
   },
   {
     timestamps: {

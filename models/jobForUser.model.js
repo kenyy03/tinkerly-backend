@@ -8,6 +8,8 @@ const jobForUserSchema = new mongoose.Schema(
     employerId: { type: ObjectId, ref: 'user', default: null },
     isConfirmedByEmployee: { type: Boolean, default: false },
     isConfirmedByEmployer: { type: Boolean, default: false },
+    hourlyRate: { type: Number, default: 0.0},
+    serviceFee: { type: Number, default: 0.0},
   },
   {
     timestamps: {
