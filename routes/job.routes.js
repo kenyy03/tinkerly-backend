@@ -12,4 +12,13 @@ app.get('/job/get-jobs-by-employer', jobController.getJobsByEmployer);
 
 app.get('/job/get-abilities', jobController.getAbilitiesByJobId);
 
+app.get('/job/get-invitations-by-employee', jobController.getJobForUserByEmployee);
+
+app.get('/job/get-invitations-by-employer', jobController.getJobForUserByEmployer);
+
+app.post('/job/create-for-user', jobController.createJobForUser);
+
+app.post('/job/update-for-user', jobController.updateJobForUser);
+
+
 module.exports = app;
