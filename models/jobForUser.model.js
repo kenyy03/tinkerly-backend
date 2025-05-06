@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { config } = require('../config');
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const jobForUserSchema = new mongoose.Schema(
@@ -10,6 +11,11 @@ const jobForUserSchema = new mongoose.Schema(
     isConfirmedByEmployer: { type: Boolean, default: false },
     hourlyRate: { type: Number, default: 0.0},
     serviceFee: { type: Number, default: 0.0},
+    status: {
+      type: String,
+      enum: Object.values(config.JOB_STATUS),
+      default: config.JOB_STATUS.PENDING,
+    }
   },
   {
     timestamps: {
