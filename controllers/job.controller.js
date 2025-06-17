@@ -191,7 +191,9 @@ exports.updateJobForUser = async (req, res) => {
       serviceFee, 
       isConfirmedByEmployee, 
       isConfirmedByEmployer, 
-      status 
+      status,
+      isReviewedByEmployee,
+      isReviewedByEmployer, 
     } = req.body;
 
     // Validate status against config.JOB_STATUS if provided
@@ -207,7 +209,9 @@ exports.updateJobForUser = async (req, res) => {
       ...(!Helper.isNullOrWhiteSpace(serviceFee) && { serviceFee }),
       ...(typeof isConfirmedByEmployee === 'boolean' && { isConfirmedByEmployee }),
       ...(typeof isConfirmedByEmployer === 'boolean' && { isConfirmedByEmployer }),
-      ...(!Helper.isNullOrWhiteSpace(status) && { status })
+      ...(!Helper.isNullOrWhiteSpace(status) && { status }),
+      ...(typeof isReviewedByEmployee === 'boolean' && { isReviewedByEmployee }),
+      ...(typeof isReviewedByEmployer === 'boolean' && { isReviewedByEmployer })
     };
 
     const updatedJob = await JobForUser.findByIdAndUpdate(id, jobToUpdate, { new: true })

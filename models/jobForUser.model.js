@@ -15,7 +15,9 @@ const jobForUserSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(config.JOB_STATUS),
       default: config.JOB_STATUS.PENDING,
-    }
+    },
+    isReviewedByEmployee: { type: Boolean, default: false },
+    isReviewedByEmployer: { type: Boolean, default: false },
   },
   {
     timestamps: {
