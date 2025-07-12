@@ -16,7 +16,7 @@ const server  = http.createServer(app);
 const httpServer = server.listen(port, () => console.log(`Server running on port ${port}`));
 const io = new WebSocketServer(httpServer, {
   cors: {
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000','http://127.0.0.1:62338' ]
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000','http://127.0.0.1:62338','https://tinkerlybackend.onrender.com' ]
   } 
 });
 // sockets(io);
